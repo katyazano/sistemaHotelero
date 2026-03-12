@@ -31,6 +31,18 @@
             @foreach($habitaciones as $habitacion)
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
+
+                    <!-- Imagen de la habitación -->
+                    @if ($habitacion->imagen_url)
+                        <img src="{{ $habitacion->imagen_url }}" class="card-img-top" alt="{{ $habitacion->tipo }}" style="height: 200px; object-fit: cover;">
+                    @else
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                            Sin imagen
+                        </div>
+                    @endif
+
+                    <!-- Fin de la imagen -->
+
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="card-title text-primary mb-0">{{ $habitacion->tipo }}</h5>
