@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HotelController; // Importamos el controlador
+use App\Http\Controllers\HotelController;
+use App\Http\Controllers\ReservaController; 
+// Importamos los controlador
 
 // La ruta principal ahora llama al método 'index' del HotelController
 Route::get('/', [HotelController::class, 'index']);
@@ -10,3 +12,6 @@ Route::get('/', [HotelController::class, 'index']);
 Route::get('/contacto', function () {
     return view('contact');
 });
+
+// Rutas para reservas
+Route::resource('reservas', ReservaController::class);
