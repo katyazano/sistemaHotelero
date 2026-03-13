@@ -8,7 +8,7 @@ class Reserva extends Model
 {
     protected $table = 'reservas';
     protected $primaryKey = 'id_reserva';
-    protected $fillable = ['folio', 'fecha_entrada', 'fecha_salida', 'estado_pago', 'estado_reserva', 'total', 'id_usuario'];
+    protected $fillable = ['folio', 'fecha_entrada', 'fecha_salida', 'estado_pago', 'estado_reserva', 'total', 'id_usuario', 'imagen_url'];
 
     public function usuario() {
         return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');

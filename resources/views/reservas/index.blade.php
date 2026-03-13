@@ -26,15 +26,18 @@
 
     <div class="container mt-5">
         <h1 class="display-4 fw-bold text-center">Listado de Reservas</h1>
+
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
         @if(session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
+
         <div class="text-end mb-3">
             <a href="{{ route('reservas.create') }}" class="btn btn-primary">Nueva Reserva</a>
         </div>
+
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -49,10 +52,13 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($reservas as $reserva)
+                @forelse($reservas as $reserva)
                 <tr>
                     <td>{{ $reserva->folio }}</td>
-                    <td>{{ $reserva->usuario->nombre ?? 'N/A' }}<br><small>{{ $reserva->usuario->email ?? '' }}</small></td>
+                    <td>
+                        {{ $reserva->usuario->nombre ?? 'N/A' }}<br>
+                        <small>{{ $reserva->usuario->email ?? '' }}</small>
+                    </td>
                     <td>{{ $reserva->fecha_entrada }}</td>
                     <td>{{ $reserva->fecha_salida }}</td>
                     <td>${{ number_format($reserva->total, 2) }}</td>
@@ -76,7 +82,11 @@
                         </form>
                     </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="8" class="text-center">No hay reservas registradas.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

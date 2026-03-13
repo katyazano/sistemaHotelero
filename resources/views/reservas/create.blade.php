@@ -147,6 +147,19 @@
         });
     </script>
 
+    <div class="mb-3">
+        <label for="imagen" class="form-label">Subir Comprobante/Imagen</label>
+        <input type="file" class="form-control @error('imagen') is-invalid @enderror" id="imagen" name="imagen" accept="image/*">
+        <small class="text-muted">Archivo (jpg, png, gif, máx 2MB)</small>
+        @error('imagen') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="mb-3">
+        <label for="imagen_url" class="form-label">O ingresa una URL de imagen externa</label>
+        <input type="url" class="form-control @error('imagen_url') is-invalid @enderror" id="imagen_url" name="imagen_url" value="{{ old('imagen_url') }}" placeholder="https://ejemplo.com/imagen.jpg">
+        @error('imagen_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

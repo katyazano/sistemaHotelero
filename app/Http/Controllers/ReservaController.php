@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reserva;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Usuario;
 use App\Models\Habitacion;
 use App\Models\DetalleReserva;
@@ -42,7 +43,19 @@ class ReservaController extends Controller
             'detalles' => 'required|array|min:1',
             'detalles.*.id_habitacion' => 'required|exists:habitaciones,id_habitacion',
             'detalles.*.cantidad_personas' => 'required|integer|min:1',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // si se sube archivo
+            'imagen_url' => 'nullable|url'
         ]);
+
+        $data = $request->only(['id_usuario', 'fecha_entrada', 'fecha_salida', 'estado_pago', 'estado_reserva']); // ajusta según tus campos
+
+    // Manejo de imagen
+    if ($request->hasFile('imagen')) {
+        $path = $request->file('imagen')->store('reservas', 'public');
+        $data['imagen_url'] = Storage::url($path);
+    } elseif ($request->filled('imagen_url')) {
+        $data['imagen_url'] = $request->imagen_url;
+    }
 
         // Calcular número de noches
         $noches = (strtotime($request->fecha_salida) - strtotime($request->fecha_entrada)) / 86400;
@@ -61,6 +74,7 @@ class ReservaController extends Controller
                 'estado_reserva' => 'confirmada', // Puede ser 'pendiente' si prefieres
                 'total' => 0,
                 'id_usuario' => $request->id_usuario,
+                'imagen_url' => $data['imagen_url'] ?? null,
             ]);
 
             $total = 0;
@@ -151,6 +165,23 @@ class ReservaController extends Controller
             'detalles.*.id_habitacion' => 'required|exists:habitaciones,id_habitacion',
             'detalles.*.cantidad_personas' => 'required|integer|min:1',
         ]);
+
+        // Validación similar a store
+
+        $data = $request->only(['id_usuario', 'fecha_entrada', 'fecha_salida', 'estado_pago', 'estado_reserva']);
+
+        if ($request->hasFile('imagen')) {
+        // Eliminar imagen anterior si existe
+        if ($reserva->imagen_url) {
+            $oldPath = str_replace('/storage/', '', $reserva->imagen_url);
+            Storage::disk('public')->delete($oldPath);
+        }
+            $path = $request->file('imagen')->store('reservas', 'public');
+            $data['imagen_url'] = Storage::url($path);
+        } elseif ($request->filled('imagen_url')) {
+            $data['imagen_url'] = $request->imagen_url;
+        }   
+        
 
         $noches = (strtotime($request->fecha_salida) - strtotime($request->fecha_entrada)) / 86400;
 
@@ -244,7 +275,11 @@ class ReservaController extends Controller
      */
     public function destroy(Reserva $reserva)
     {
+        if ($reserva->imagen_url) {
+        $path = str_replace('/storage/', '', $reserva->imagen_url);
+        Storage::disk('public')->delete($path);
+        }
         $reserva->delete();
-        return redirect()->route('reservas.index')->with('success', 'Reserva eliminada correctamente.');
+        return redirect()->route('reservas.index')->with('success', 'Reserva eliminada.');
     }
 }

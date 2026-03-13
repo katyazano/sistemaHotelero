@@ -67,6 +67,13 @@
         </div>
     </div>
 
+    @if($reserva->imagen_url)
+    <div class="mb-3">
+        <label>Imagen adjunta:</label><br>
+        <img src="{{ $reserva->imagen_url }}" alt="Imagen de reserva" style="max-width: 300px; max-height: 200px;" class="border">
+    </div>
+    @endif
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

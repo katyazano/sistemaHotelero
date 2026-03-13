@@ -24,6 +24,26 @@
         </div>
     </nav>
 
+    @if($reserva->imagen_url)
+    <div class="mb-3">
+        <label>Imagen actual:</label><br>
+        <img src="{{ $reserva->imagen_url }}" alt="Imagen" style="max-width: 200px; max-height: 150px;" class="border">
+        </div>
+    @endif
+
+    <div class="mb-3">
+        <label for="imagen" class="form-label">Cambiar imagen (subir archivo)</label>
+        <input type="file" class="form-control @error('imagen') is-invalid @enderror" id="imagen" name="imagen" accept="image/*">
+        @error('imagen') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="mb-3">
+        <label for="imagen_url" class="form-label">O cambiar usando URL externa</label>
+        <input type="url" class="form-control @error('imagen_url') is-invalid @enderror" id="imagen_url" name="imagen_url" value="{{ old('imagen_url', $reserva->imagen_url) }}" placeholder="https://ejemplo.com/imagen.jpg">
+        <small class="text-muted">Deja vacío para conservar la imagen actual si no deseas cambiarla.</small>
+        @error('imagen_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
     <div class="container mt-5">
         <h1 class="display-4 fw-bold text-center">Editar Reserva: {{ $reserva->folio }}</h1>
         <form action="{{ route('reservas.update', $reserva) }}" method="POST">
