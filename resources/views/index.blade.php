@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio - Sistema Hotelero</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-light">
 
@@ -21,51 +21,47 @@
         </div>
     </nav>
 
-    <div class="container mt-5 text-center">
-        <h1 class="display-4 fw-bold">Nuestras Habitaciones</h1>
-        <p class="lead text-muted">Encuentra el espacio perfecto para tu descanso.</p>
+    <div class="container mx-auto px-4 py-12 text-center">
+        <h1 class="text-4xl font-bold text-slate-900">Nuestras Habitaciones</h1>
+        <p class="mt-4 text-slate-600">Encuentra el espacio perfecto para tu descanso.</p>
     </div>
 
-    <div class="container mt-4 mb-5">
-        <div class="row">
+    <main class="container mx-auto px-4 pb-16">
+        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             @foreach($habitaciones as $habitacion)
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-
-                    <!-- Imagen de la habitación -->
+            <div>
+                <x-card :title="$habitacion->tipo">
                     @if ($habitacion->imagen_url)
-                        <img src="{{ $habitacion->imagen_url }}" class="card-img-top" alt="{{ $habitacion->tipo }}" style="height: 200px; object-fit: cover;">
+                        <img src="{{ $habitacion->imagen_url }}" alt="{{ $habitacion->tipo }}" class="w-full h-48 object-cover rounded-lg mb-4">
                     @else
-                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <div class="w-full h-48 bg-slate-200 text-slate-500 rounded-lg flex items-center justify-center mb-4">
                             Sin imagen
                         </div>
                     @endif
 
-                    <!-- Fin de la imagen -->
-
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title text-primary mb-0">{{ $habitacion->tipo }}</h5>
-                            <span class="badge bg-{{ $habitacion->estado == 'disponible' ? 'success' : ($habitacion->estado == 'ocupada' ? 'danger' : 'warning') }}">
+                    <div class="space-y-3 text-slate-700">
+                        <div class="flex items-center justify-between text-sm text-slate-500">
+                            <span>Habitación #{{ $habitacion->numero }}</span>
+                            <span class="rounded-full px-3 py-1 text-xs font-semibold text-white {{ $habitacion->estado == 'disponible' ? 'bg-emerald-600' : ($habitacion->estado == 'ocupada' ? 'bg-red-600' : 'bg-amber-500') }}">
                                 {{ ucfirst($habitacion->estado) }}
                             </span>
                         </div>
-                        <h6 class="card-subtitle mb-3 text-muted">Habitación #{{ $habitacion->numero }}</h6>
-                        <p class="card-text">
+                        <p>
                             <strong>Capacidad:</strong> {{ $habitacion->capacidad }} personas<br>
                             <strong>Precio:</strong> ${{ number_format($habitacion->precio, 2) }} MXN / noche
                         </p>
                     </div>
-                    <div class="card-footer bg-white border-top-0">
-                        <button class="btn btn-outline-primary w-100" {{ $habitacion->estado != 'disponible' ? 'disabled' : '' }}>
+
+                    <x-slot:footer>
+                        <x-button variant="{{ $habitacion->estado == 'disponible' ? 'primary' : 'secondary' }}" class="w-full" :disabled="$habitacion->estado != 'disponible'">
                             Reservar Ahora
-                        </button>
-                    </div>
-                </div>
+                        </x-button>
+                    </x-slot:footer>
+                </x-card>
             </div>
             @endforeach
-            </div>
-    </div>
+        </div>
+    </main>
 
 </body>
 </html>
