@@ -14,9 +14,9 @@ class ImagenHabitacionSeeder extends Seeder
     public function run(): void
     {
         $imagenes = [
-            'Sencilla' => '/storage/imagen_habitaciones/sencilla.jpg',  
-            'Doble'    => '/storage/imagen_habitaciones/doble.jpg',
-            'Penthouse' => '/storage/imagen_habitaciones/penthouse.jpg',
+            'Sencilla' => '/storage/imagen_habitaciones/sencilla.png',
+            'Doble'    => '/storage/imagen_habitaciones/doble.png',
+            'Penthouse' => '/storage/imagen_habitaciones/penthouse.png',
         ];
 
         foreach ($imagenes as $tipo => $ruta) {

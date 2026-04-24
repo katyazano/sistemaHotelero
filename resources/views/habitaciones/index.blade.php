@@ -29,7 +29,13 @@
                     <tr>
                         <td>
                             @if($habitacion->imagen_url)
-                                <img src="{{ asset('storage/' . $habitacion->imagen_url) }}" width="60" class="rounded">
+                                @php
+                                    $img = $habitacion->imagen_url;
+                                    if (!(strpos($img, '/storage') === 0 || strpos($img, 'http') === 0)) {
+                                        $img = asset('storage/' . ltrim($img, '/'));
+                                    }
+                                @endphp
+                                <img src="{{ $img }}" width="60" class="rounded">
                             @else
                                 <span class="text-muted">Sin foto</span>
                             @endif
