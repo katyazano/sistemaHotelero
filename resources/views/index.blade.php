@@ -15,6 +15,7 @@
                 <div class="flex items-center space-x-4">
                     <a href="{{ url('/contacto') }}" class="text-slate-700 hover:text-slate-900 text-white">Contacto</a>
                     <a href="{{ route('reservas.index') }}" class="text-slate-700 hover:text-slate-900 text-white">Reservas</a>
+                    <a href="{{ route('usuarios.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Registrarse</a>
                 </div>
             </div>
         </div>
@@ -31,7 +32,7 @@
             <div>
                 <x-card :title="$habitacion->tipo">
                     @if ($habitacion->imagen_url)
-                        <img src="{{ $habitacion->imagen_url }}" alt="{{ $habitacion->tipo }}" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <img src="{{ asset($habitacion->imagen_url) }}" alt="{{ $habitacion->tipo }}" class="w-full h-48 object-cover rounded-lg mb-4">
                     @else
                         <div class="w-full h-48 bg-slate-200 text-slate-500 rounded-lg flex items-center justify-center mb-4">
                             Sin imagen

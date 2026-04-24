@@ -2,9 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HotelController;
-use App\Http\Controllers\ReservaController; 
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\DashboardController;
-// Importamos los controlador
 
 // La ruta principal ahora llama al método 'index' del HotelController
 Route::get('/', [HotelController::class, 'index']);
@@ -13,6 +13,10 @@ Route::get('/', [HotelController::class, 'index']);
 Route::get('/contacto', function () {
     return view('contact');
 });
+
+// Rutas de registro
+Route::get('/registro', [UsuarioController::class, 'create'])->name('usuarios.create');
+Route::post('/registro', [UsuarioController::class, 'store'])->name('usuarios.store');
 
 // Rutas para reservas
 Route::resource('reservas', ReservaController::class);
