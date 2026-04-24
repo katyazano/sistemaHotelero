@@ -8,15 +8,14 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Sistema Hotelero</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/contacto">Contacto</a>
-                    </li>
-                </ul>
+    <nav class="bg-gray-800 shadow-sm mb-4">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-3">
+                <a class="text-white font-medium text-slate-900" href="/">Sistema Hotelero</a>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url('/contacto') }}" class="text-slate-700 hover:text-slate-900 text-white">Contacto</a>
+                    <a href="{{ route('reservas.index') }}" class="text-slate-700 hover:text-slate-900 text-white">Reservas</a>
+                </div>
             </div>
         </div>
     </nav>

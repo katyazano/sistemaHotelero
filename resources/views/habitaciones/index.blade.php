@@ -12,6 +12,18 @@
         @endcan
     </div>
 
+    <nav class="bg-dark shadow-sm mb-4">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-3">
+                <a class="text-base font-medium text-slate-900" href="/">Sistema Hotelero</a>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url('/contacto') }}" class="text-slate-700 hover:text-slate-900">Contacto</a>
+                    <a href="{{ route('reservas.index') }}" class="text-slate-700 hover:text-slate-900">Reservas</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="card shadow-sm">
         <div class="card-body">
             <table class="table table-hover">
