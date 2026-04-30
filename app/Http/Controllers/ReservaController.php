@@ -8,7 +8,11 @@ use App\Models\Usuario;
 use App\Models\Habitacion;
 use App\Models\DetalleReserva;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Mail\ReservaConfirmada;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ReservaController extends Controller
 {
@@ -22,7 +26,149 @@ class ReservaController extends Controller
     }
 
     /**
-     * Mostrar formulario para crear nueva reserva.
+     * Mis Reservas – solo para el huésped autenticado.
+     */
+    public function misReservas()
+    {
+        $user = Auth::user();
+        $reservas = Reserva::whereHas('usuario', function ($q) use ($user) {
+            $q->where('email', $user->email);
+        })->with('detalles.habitacion')->latest()->get();
+
+        return view('guest.mis-reservas', compact('reservas'));
+    }
+
+    /**
+     * Cancelar una reserva propia (solo si está pendiente).
+     */
+    public function cancelar(Reserva $reserva)
+    {
+        $user = Auth::user();
+
+        // Verify ownership via email match
+        if ($reserva->usuario->email !== $user->email) {
+            abort(403);
+        }
+
+        if ($reserva->estado_reserva !== 'confirmada' || $reserva->estado_pago !== 'pendiente') {
+            return back()->withErrors(['error' => 'Solo puedes cancelar reservas con pago pendiente.']);
+        }
+
+        $reserva->update(['estado_reserva' => 'cancelada']);
+        return back()->with('success', 'Reserva cancelada correctamente.');
+    }
+
+    /**
+     * Mostrar formulario para crear nueva reserva (Guest).
+     */
+    public function guestCreate(Habitacion $habitacion)
+    {
+        $user = Auth::user();
+        
+        // Buscar o crear usuario en tabla usuarios
+        $usuario = Usuario::firstOrCreate(
+            ['email' => $user->email],
+            [
+                'nombre' => $user->name,
+                'password' => $user->password,
+                'rol' => 'Huesped'
+            ]
+        );
+
+        return view('reservas.guest-create', compact('habitacion', 'usuario'));
+    }
+
+    /**
+     * Guardar una nueva reserva creada por guest.
+     */
+    public function guestStore(Request $request)
+    {
+        $request->validate([
+            'id_habitacion' => 'required|exists:habitaciones,id_habitacion',
+            'fecha_entrada' => 'required|date|after_or_equal:today',
+            'fecha_salida' => 'required|date|after:fecha_entrada',
+        ]);
+
+        $user = Auth::user();
+        
+        // Buscar o crear usuario en tabla usuarios
+        $usuario = Usuario::firstOrCreate(
+            ['email' => $user->email],
+            [
+                'nombre' => $user->name,
+                'password' => $user->password,
+                'rol' => 'Huesped'
+            ]
+        );
+
+        $habitacion = Habitacion::findOrFail($request->id_habitacion);
+
+        // Calcular número de noches
+        $noches = (strtotime($request->fecha_salida) - strtotime($request->fecha_entrada)) / 86400;
+
+        // Generar folio único
+        $folio = 'RES-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
+
+        DB::beginTransaction();
+        try {
+            // Validar disponibilidad
+            $conflicto = DetalleReserva::where('id_habitacion', $habitacion->id_habitacion)
+                ->whereHas('reserva', function ($query) use ($request) {
+                    $query->where(function ($q) use ($request) {
+                        $q->whereBetween('fecha_entrada', [$request->fecha_entrada, $request->fecha_salida])
+                          ->orWhereBetween('fecha_salida', [$request->fecha_entrada, $request->fecha_salida])
+                          ->orWhere(function ($q2) use ($request) {
+                              $q2->where('fecha_entrada', '<=', $request->fecha_entrada)
+                                 ->where('fecha_salida', '>=', $request->fecha_salida);
+                          });
+                    })
+                    ->whereNotIn('estado_reserva', ['cancelada']);
+                })
+                ->exists();
+
+            if ($conflicto) {
+                throw new \Exception("La habitación no está disponible en las fechas seleccionadas.");
+            }
+
+            $total = $habitacion->precio * $noches;
+
+            // Crear la reserva
+            $reserva = Reserva::create([
+                'folio' => $folio,
+                'fecha_entrada' => $request->fecha_entrada,
+                'fecha_salida' => $request->fecha_salida,
+                'estado_pago' => 'pendiente',
+                'estado_reserva' => 'confirmada',
+                'total' => $total,
+                'id_usuario' => $usuario->id_usuario,
+            ]);
+
+            // Crear detalle
+            DetalleReserva::create([
+                'id_reserva' => $reserva->id_reserva,
+                'id_habitacion' => $habitacion->id_habitacion,
+                'precio_unitario' => $habitacion->precio,
+                'subtotal' => $total,
+            ]);
+
+            DB::commit();
+            
+            // Enviar email de confirmación
+            try {
+                Mail::to($user->email)->send(new ReservaConfirmada($reserva));
+            } catch (\Exception $e) {
+                Log::warning('No se pudo enviar email de confirmación: ' . $e->getMessage());
+            }
+
+            return redirect()->route('mis-reservas')->with('success', 'Reserva creada correctamente. Folio: ' . $folio);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al crear la reserva: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
+     * Mostrar formulario para crear nueva reserva (Admin).
      */
     public function create()
     {
@@ -263,6 +409,17 @@ class ReservaController extends Controller
             $reserva->update(['total' => $total]);
 
             DB::commit();
+
+            // Send confirmation email if status changed to 'confirmada'
+            if ($request->estado_reserva === 'confirmada' && $reserva->wasChanged('estado_reserva')) {
+                try {
+                    Mail::to($reserva->usuario->email)->send(new ReservaConfirmada($reserva));
+                } catch (\Exception $e) {
+                    // Log but don't fail the request
+                    Log::warning('No se pudo enviar email de confirmación: ' . $e->getMessage());
+                }
+            }
+
             return redirect()->route('reservas.index')->with('success', 'Reserva actualizada correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
