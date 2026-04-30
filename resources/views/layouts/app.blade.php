@@ -30,7 +30,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('habitaciones') }}">
+                                <a class="nav-link" href="{{ route('habitaciones.index') }}">
                                     <i class="bi bi-door-open"></i> Gestionar Habitaciones
                                 </a>
                             </li>
