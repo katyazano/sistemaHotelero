@@ -138,4 +138,14 @@
     // Calcular al cargar
     calcularTotal();
 </script>
+@endpush$' + total.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+    }
+
+    fechaEntrada.addEventListener('change', calcularTotal);
+    fechaSalida.addEventListener('change', calcularTotal);
+    
+    // Calcular al cargar
+    calcularTotal();
+</script>
 @endpush

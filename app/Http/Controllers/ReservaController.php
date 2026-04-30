@@ -111,23 +111,36 @@ class ReservaController extends Controller
 
         DB::beginTransaction();
         try {
-            // Validar disponibilidad
+            // Validar disponibilidad - MEJORADO para evitar doble reserva
             $conflicto = DetalleReserva::where('id_habitacion', $habitacion->id_habitacion)
                 ->whereHas('reserva', function ($query) use ($request) {
                     $query->where(function ($q) use ($request) {
-                        $q->whereBetween('fecha_entrada', [$request->fecha_entrada, $request->fecha_salida])
-                          ->orWhereBetween('fecha_salida', [$request->fecha_entrada, $request->fecha_salida])
-                          ->orWhere(function ($q2) use ($request) {
-                              $q2->where('fecha_entrada', '<=', $request->fecha_entrada)
-                                 ->where('fecha_salida', '>=', $request->fecha_salida);
-                          });
+                        // Caso 1: Nueva reserva empieza durante una reserva existente
+                        $q->where(function ($q1) use ($request) {
+                            $q1->where('fecha_entrada', '<=', $request->fecha_entrada)
+                               ->where('fecha_salida', '>', $request->fecha_entrada);
+                        })
+                        // Caso 2: Nueva reserva termina durante una reserva existente
+                        ->orWhere(function ($q2) use ($request) {
+                            $q2->where('fecha_entrada', '<', $request->fecha_salida)
+                               ->where('fecha_salida', '>=', $request->fecha_salida);
+                        })
+                        // Caso 3: Nueva reserva contiene completamente una reserva existente
+                        ->orWhere(function ($q3) use ($request) {
+                            $q3->where('fecha_entrada', '>=', $request->fecha_entrada)
+                               ->where('fecha_salida', '<=', $request->fecha_salida);
+                        });
                     })
                     ->whereNotIn('estado_reserva', ['cancelada']);
                 })
                 ->exists();
 
             if ($conflicto) {
-                throw new \Exception("La habitación no está disponible en las fechas seleccionadas.");
+                DB::rollBack();
+                return back()->withErrors([
+                    'error' => 'Lo sentimos, la habitación ' . $habitacion->tipo . ' #' . $habitacion->numero . 
+                              ' NO está disponible para las fechas seleccionadas. Por favor, elige otras fechas o una habitación diferente.'
+                ])->withInput();
             }
 
             $total = $habitacion->precio * $noches;
@@ -234,23 +247,32 @@ class ReservaController extends Controller
                     throw new \Exception("La habitación {$habitacion->numero} excede su capacidad máxima de {$habitacion->capacidad} personas.");
                 }
 
-                // Validar disponibilidad en fechas (evitar doble reserva)
+                // Validar disponibilidad en fechas (evitar doble reserva) - MEJORADO
                 $conflicto = DetalleReserva::where('id_habitacion', $habitacion->id_habitacion)
                     ->whereHas('reserva', function ($query) use ($request) {
                         $query->where(function ($q) use ($request) {
-                            $q->whereBetween('fecha_entrada', [$request->fecha_entrada, $request->fecha_salida])
-                              ->orWhereBetween('fecha_salida', [$request->fecha_entrada, $request->fecha_salida])
-                              ->orWhere(function ($q2) use ($request) {
-                                  $q2->where('fecha_entrada', '<=', $request->fecha_entrada)
-                                     ->where('fecha_salida', '>=', $request->fecha_salida);
-                              });
+                            // Caso 1: Nueva reserva empieza durante una reserva existente
+                            $q->where(function ($q1) use ($request) {
+                                $q1->where('fecha_entrada', '<=', $request->fecha_entrada)
+                                   ->where('fecha_salida', '>', $request->fecha_entrada);
+                            })
+                            // Caso 2: Nueva reserva termina durante una reserva existente
+                            ->orWhere(function ($q2) use ($request) {
+                                $q2->where('fecha_entrada', '<', $request->fecha_salida)
+                                   ->where('fecha_salida', '>=', $request->fecha_salida);
+                            })
+                            // Caso 3: Nueva reserva contiene completamente una reserva existente
+                            ->orWhere(function ($q3) use ($request) {
+                                $q3->where('fecha_entrada', '>=', $request->fecha_entrada)
+                                   ->where('fecha_salida', '<=', $request->fecha_salida);
+                            });
                         })
-                        ->whereNotIn('estado_reserva', ['cancelada']); // No considerar reservas canceladas
+                        ->whereNotIn('estado_reserva', ['cancelada']);
                     })
                     ->exists();
 
                 if ($conflicto) {
-                    throw new \Exception("La habitación {$habitacion->numero} no está disponible en las fechas seleccionadas.");
+                    throw new \Exception("La habitación {$habitacion->numero} NO está disponible en las fechas seleccionadas.");
                 }
 
                 $subtotal = $habitacion->precio * $noches;
@@ -360,25 +382,34 @@ class ReservaController extends Controller
                     throw new \Exception("La habitación {$habitacion->numero} excede su capacidad.");
                 }
 
-                // Validar disponibilidad excepto para la misma reserva
+                // Validar disponibilidad excepto para la misma reserva - MEJORADO
                 $conflicto = DetalleReserva::where('id_habitacion', $habitacion->id_habitacion)
                     ->where('id_detalle', '!=', $detalle['id_detalle'] ?? null) // Excluir el mismo detalle si es edición
                     ->whereHas('reserva', function ($query) use ($request, $reserva) {
                         $query->where('id_reserva', '!=', $reserva->id_reserva) // Excluir la reserva actual
                               ->where(function ($q) use ($request) {
-                                  $q->whereBetween('fecha_entrada', [$request->fecha_entrada, $request->fecha_salida])
-                                    ->orWhereBetween('fecha_salida', [$request->fecha_entrada, $request->fecha_salida])
-                                    ->orWhere(function ($q2) use ($request) {
-                                        $q2->where('fecha_entrada', '<=', $request->fecha_entrada)
-                                           ->where('fecha_salida', '>=', $request->fecha_salida);
-                                    });
+                                  // Caso 1: Nueva reserva empieza durante una reserva existente
+                                  $q->where(function ($q1) use ($request) {
+                                      $q1->where('fecha_entrada', '<=', $request->fecha_entrada)
+                                         ->where('fecha_salida', '>', $request->fecha_entrada);
+                                  })
+                                  // Caso 2: Nueva reserva termina durante una reserva existente
+                                  ->orWhere(function ($q2) use ($request) {
+                                      $q2->where('fecha_entrada', '<', $request->fecha_salida)
+                                         ->where('fecha_salida', '>=', $request->fecha_salida);
+                                  })
+                                  // Caso 3: Nueva reserva contiene completamente una reserva existente
+                                  ->orWhere(function ($q3) use ($request) {
+                                      $q3->where('fecha_entrada', '>=', $request->fecha_entrada)
+                                         ->where('fecha_salida', '<=', $request->fecha_salida);
+                                  });
                               })
                               ->whereNotIn('estado_reserva', ['cancelada']);
                     })
                     ->exists();
 
                 if ($conflicto) {
-                    throw new \Exception("La habitación {$habitacion->numero} no está disponible en las fechas seleccionadas.");
+                    throw new \Exception("La habitación {$habitacion->numero} NO está disponible en las fechas seleccionadas.");
                 }
 
                 $subtotal = $habitacion->precio * $noches;
