@@ -3,64 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio - Sistema Hotelero</title>
+    <title>Habitaciones - Sistema Hotelero</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-light">
 
-    <nav class="bg-gray-800 shadow-sm mb-4">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-3">
-                <a class="text-white font-medium text-slate-900" href="/">Sistema Hotelero</a>
-                <div class="flex items-center space-x-4">
-                    <a href="{{ url('/contacto') }}" class="text-slate-700 hover:text-slate-900 text-white">Contacto</a>
-                    <a href="{{ route('reservas.index') }}" class="text-slate-700 hover:text-slate-900 text-white">Reservas</a>
-                </div>
+    {{-- Navbar --}}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="bi bi-building"></i> Sistema Hotelero
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/contacto') }}">Contacto</a>
+                    </li>
+                    @auth
+                        @if(auth()->user()->rol === 'admin')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                            </li>
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('guest.dashboard') }}">Mi Panel</a>
+                            </li>
+                        @endif
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">Iniciar Sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('register') }}">Registrarse</a>
+                        </li>
+                    @endauth
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto px-4 py-12 text-center">
-        <h1 class="text-4xl font-bold text-slate-900">Nuestras Habitaciones</h1>
-        <p class="mt-4 text-slate-600">Encuentra el espacio perfecto para tu descanso.</p>
+    {{-- Hero Section --}}
+    <div class="bg-primary text-white py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold">Nuestras Habitaciones</h1>
+            <p class="lead">Encuentra el espacio perfecto para tu descanso</p>
+        </div>
     </div>
 
-    <main class="container mx-auto px-4 pb-16">
-        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            @foreach($habitaciones as $habitacion)
-            <div>
-                <x-card :title="$habitacion->tipo">
-                    @if ($habitacion->imagen_url)
-                        <img src="{{ $habitacion->imagen_url }}" alt="{{ $habitacion->tipo }}" class="w-full h-48 object-cover rounded-lg mb-4">
+    {{-- Habitaciones Grid --}}
+    <main class="container my-5">
+        <div class="row g-4">
+            @forelse($habitaciones as $habitacion)
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0">
+                    @if($habitacion->imagen_url)
+                        @php
+                            $img = $habitacion->imagen_url;
+                            if (!str_starts_with($img, 'http') && !str_starts_with($img, '/storage')) {
+                                $img = asset('storage/' . ltrim($img, '/'));
+                            }
+                        @endphp
+                        <img src="{{ $img }}" class="card-img-top" alt="{{ $habitacion->tipo }}" style="height: 250px; object-fit: cover;">
                     @else
-                        <div class="w-full h-48 bg-slate-200 text-slate-500 rounded-lg flex items-center justify-center mb-4">
-                            Sin imagen
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center text-white" style="height: 250px;">
+                            <i class="bi bi-image fs-1"></i>
                         </div>
                     @endif
-
-                    <div class="space-y-3 text-slate-700">
-                        <div class="flex items-center justify-between text-sm text-slate-500">
-                            <span>Habitación #{{ $habitacion->numero }}</span>
-                            <span class="rounded-full px-3 py-1 text-xs font-semibold text-white {{ $habitacion->estado == 'disponible' ? 'bg-emerald-600' : ($habitacion->estado == 'ocupada' ? 'bg-red-600' : 'bg-amber-500') }}">
+                    
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">{{ $habitacion->tipo }}</h5>
+                            <span class="badge bg-{{ strtolower($habitacion->estado) === 'disponible' ? 'success' : 'warning text-dark' }}">
                                 {{ ucfirst($habitacion->estado) }}
                             </span>
                         </div>
-                        <p>
-                            <strong>Capacidad:</strong> {{ $habitacion->capacidad }} personas<br>
-                            <strong>Precio:</strong> ${{ number_format($habitacion->precio, 2) }} MXN / noche
+                        
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-door-closed"></i> Habitación #{{ $habitacion->numero }}
                         </p>
+                        
+                        <ul class="list-unstyled mb-3">
+                            <li><i class="bi bi-people"></i> <strong>Capacidad:</strong> {{ $habitacion->capacidad }} personas</li>
+                            <li><i class="bi bi-cash"></i> <strong>Precio:</strong> ${{ number_format($habitacion->precio, 2) }} / noche</li>
+                        </ul>
+                        
+                        @auth
+                            @if(auth()->user()->rol === 'guest')
+                                <a href="{{ route('reservas.guest.create', $habitacion->id_habitacion) }}" 
+                                   class="btn btn-primary w-100 {{ $habitacion->estado !== 'disponible' ? 'disabled' : '' }}">
+                                    <i class="bi bi-calendar-check"></i> Reservar Ahora
+                                </a>
+                            @else
+                                <button class="btn btn-secondary w-100" disabled>
+                                    Solo huéspedes pueden reservar
+                                </button>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> Inicia sesión para reservar
+                            </a>
+                        @endauth
                     </div>
-
-                    <x-slot:footer>
-                        <x-button variant="{{ $habitacion->estado == 'disponible' ? 'primary' : 'secondary' }}" class="w-full" :disabled="$habitacion->estado != 'disponible'">
-                            Reservar Ahora
-                        </x-button>
-                    </x-slot:footer>
-                </x-card>
+                </div>
             </div>
-            @endforeach
+            @empty
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No hay habitaciones disponibles en este momento.
+                </div>
+            </div>
+            @endforelse
         </div>
     </main>
 
+    {{-- Footer --}}
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2026 Sistema Hotelero. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
