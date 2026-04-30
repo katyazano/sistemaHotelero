@@ -2,38 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Reserva;
+use App\Models\Habitacion;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    /**
-     * Muestra el tablero principal según el rol del usuario.
-     */
-    public function index()
+    /** Panel del administrador */
+    public function adminIndex()
+    {
+        return view('admin.dashboard', [
+            'totalReservas'    => Reserva::count(),
+            'totalHabitaciones'=> Habitacion::count(),
+            'totalUsuarios'    => Usuario::count(),
+            'ingresosTotales'  => Reserva::where('estado_pago', 'pagado')->sum('total'),
+            'reservasRecientes'=> Reserva::with('usuario')->latest()->take(5)->get(),
+        ]);
+    }
+
+    /** Panel del huésped */
+    public function guestIndex()
     {
         $user = Auth::user();
+        $misReservas = Reserva::whereHas('usuario', function ($q) use ($user) {
+            $q->where('email', $user->email);
+        })->with('detalles.habitacion')->latest()->take(3)->get();
 
-        // Lógica para el Administrador
-        if ($user->rol === 'administrador') {
-            return view('admin.dashboard', [
-                'usuarios' => User::all(),
-                'totalReservas' => Reserva::count()
-            ]);
-        } 
-        
-        // Lógica para el Personal (Recepcionista)
-        if ($user->rol === 'personal') {
-            return view('personal.dashboard', [
-                'reservasActivas' => Reserva::where('estado', 'confirmada')->get()
-            ]);
-        }
-
-        // Lógica para el Huésped
-        return view('huesped.dashboard', [
-            'misReservas' => Reserva::where('user_id', $user->id)->get()
-        ]);
+        return view('guest.dashboard', compact('misReservas'));
     }
 }
