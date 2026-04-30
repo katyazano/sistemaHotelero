@@ -5,6 +5,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 fw-bold"><i class="bi bi-door-open"></i> Gestión de Habitaciones</h1>
+    <a href="{{ route('habitaciones.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nueva Habitación
+    </a>
 </div>
 
 <div class="card shadow-sm border-0">
@@ -42,12 +45,26 @@
                     <td>${{ number_format($habitacion->precio, 2) }}</td>
                     <td>{{ $habitacion->capacidad }} personas</td>
                     <td>
-                        <span class="badge bg-{{ strtolower($habitacion->estado) === 'disponible' ? 'success' : 'warning text-dark' }}">
+                        <span class="badge bg-{{ strtolower($habitacion->estado) === 'disponible' ? 'success' : (strtolower($habitacion->estado) === 'ocupada' ? 'danger' : 'warning text-dark') }}">
                             {{ $habitacion->estado }}
                         </span>
                     </td>
                     <td class="text-center">
-                        <span class="text-muted small">—</span>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ route('habitaciones.edit', $habitacion->id_habitacion) }}" 
+                               class="btn btn-outline-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ route('habitaciones.destroy', $habitacion->id_habitacion) }}" 
+                                  class="d-inline" 
+                                  onsubmit="return confirm('¿Estás seguro de eliminar esta habitación?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @empty

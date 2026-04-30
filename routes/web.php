@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HotelController;
+use App\Http\Controllers\HabitacionController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReporteController;
@@ -53,7 +54,27 @@ Route::patch('/mis-reservas/{reserva}/cancelar', [ReservaController::class, 'can
 // Habitaciones (admin)
 Route::get('/habitaciones', [HotelController::class, 'index'])
     ->middleware(['auth', 'role:admin'])
-    ->name('habitaciones');
+    ->name('habitaciones.index');
+
+Route::get('/habitaciones/crear', [HabitacionController::class, 'create'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('habitaciones.create');
+
+Route::post('/habitaciones', [HabitacionController::class, 'store'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('habitaciones.store');
+
+Route::get('/habitaciones/{habitacion}/editar', [HabitacionController::class, 'edit'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('habitaciones.edit');
+
+Route::put('/habitaciones/{habitacion}', [HabitacionController::class, 'update'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('habitaciones.update');
+
+Route::delete('/habitaciones/{habitacion}', [HabitacionController::class, 'destroy'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('habitaciones.destroy');
 
 // Reservas CRUD (admin)
 Route::resource('reservas', ReservaController::class)
