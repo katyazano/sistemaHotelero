@@ -94,16 +94,59 @@
                                 @enderror
                             </div>
 
-                            {{-- Country --}}
+                            {{-- Teléfono --}}
                             <div class="mb-3">
-                                <label for="pais" class="form-label fw-semibold">
-                                    <i class="bi bi-globe"></i> País
+                                <label for="telefono" class="form-label fw-semibold">
+                                    <i class="bi bi-telephone"></i> Teléfono
                                 </label>
-                                <select name="pais" id="pais"
-                                        class="form-select form-select-lg @error('pais') is-invalid @enderror">
-                                    <option value="">Cargando países...</option>
-                                </select>
-                                @error('pais')
+                                <input type="tel" name="telefono" id="telefono"
+                                       class="form-control form-control-lg @error('telefono') is-invalid @enderror"
+                                       value="{{ old('telefono') }}"
+                                       placeholder="+52 123 456 7890">
+                                @error('telefono')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="row">
+                                {{-- Fecha de Nacimiento --}}
+                                <div class="col-md-6 mb-3">
+                                    <label for="fecha_nacimiento" class="form-label fw-semibold">
+                                        <i class="bi bi-calendar"></i> Fecha de Nacimiento
+                                    </label>
+                                    <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
+                                           class="form-control form-control-lg @error('fecha_nacimiento') is-invalid @enderror"
+                                           value="{{ old('fecha_nacimiento') }}"
+                                           max="{{ date('Y-m-d') }}">
+                                    @error('fecha_nacimiento')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Country --}}
+                                <div class="col-md-6 mb-3">
+                                    <label for="pais" class="form-label fw-semibold">
+                                        <i class="bi bi-globe"></i> País
+                                    </label>
+                                    <select name="pais" id="pais"
+                                            class="form-select form-select-lg @error('pais') is-invalid @enderror">
+                                        <option value="">Cargando países...</option>
+                                    </select>
+                                    @error('pais')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            {{-- Dirección --}}
+                            <div class="mb-3">
+                                <label for="direccion" class="form-label fw-semibold">
+                                    <i class="bi bi-geo-alt"></i> Dirección
+                                </label>
+                                <textarea name="direccion" id="direccion" rows="2"
+                                          class="form-control form-control-lg @error('direccion') is-invalid @enderror"
+                                          placeholder="Calle, número, colonia, ciudad">{{ old('direccion') }}</textarea>
+                                @error('direccion')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
