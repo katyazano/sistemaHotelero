@@ -48,7 +48,7 @@
     </nav>
 
     {{-- Hero Section --}}
-    <div class="bg-primary text-white py-5">
+    <div class="hero-section">
         <div class="container text-center">
             <h1 class="display-4 fw-bold">Nuestras Habitaciones</h1>
             <p class="lead">Encuentra el espacio perfecto para tu descanso</p>
@@ -122,7 +122,7 @@
     </main>
 
     {{-- Footer --}}
-    <footer class="bg-dark text-white py-4 mt-5">
+    <footer class="footer">
         <div class="container text-center">
             <p class="mb-0">&copy; 2026 Sistema Hotelero. Todos los derechos reservados.</p>
         </div>

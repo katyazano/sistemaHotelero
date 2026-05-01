@@ -7,62 +7,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 0;
-        }
-        .register-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        .register-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-        .register-body {
-            padding: 2rem;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        .btn-register {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border: none;
-            padding: 0.75rem;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-        .btn-register:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
-        }
-    </style>
 </head>
-<body>
+<body class="auth-page">
 
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <div class="register-card">
+                <div class="auth-card">
                     {{-- Header --}}
-                    <div class="register-header">
-                        <i class="bi bi-person-plus-fill fs-1 mb-3"></i>
-                        <h2 class="fw-bold mb-2">Crear Cuenta</h2>
-                        <p class="mb-0 opacity-75">Comienza a gestionar tus reservas</p>
+                    <div class="auth-header">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <h2>Crear Cuenta</h2>
+                        <p>Comienza a gestionar tus reservas</p>
                     </div>
 
                     {{-- Body --}}
-                    <div class="register-body">
+                    <div class="auth-body">
                         <form method="POST" action="{{ route('register') }}">
                             @csrf
 
@@ -175,7 +135,7 @@
                             </div>
 
                             {{-- Submit Button --}}
-                            <button type="submit" class="btn btn-success btn-register w-100 text-white">
+                            <button type="submit" class="btn btn-success btn-auth w-100">
                                 <i class="bi bi-check-circle"></i> Registrarse
                             </button>
                         </form>
@@ -184,7 +144,7 @@
                         <div class="text-center mt-4">
                             <p class="text-muted mb-0">
                                 ¿Ya tienes una cuenta?
-                                <a href="{{ route('login') }}" class="text-decoration-none fw-semibold">Inicia Sesión</a>
+                                <a href="{{ route('login') }}" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">Inicia Sesión</a>
                             </p>
                         </div>
                     </div>
