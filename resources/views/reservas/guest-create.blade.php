@@ -10,7 +10,6 @@
                 <h4 class="mb-0"><i class="bi bi-calendar-plus"></i> Nueva Reserva</h4>
             </div>
             <div class="card-body">
-                {{-- Información de la habitación --}}
                 <div class="alert alert-info">
                     <div class="row align-items-center">
                         <div class="col-md-4">
@@ -33,34 +32,32 @@
                     </div>
                 </div>
 
-                {{-- Formulario de reserva --}}
                 <form method="POST" action="{{ route('reservas.guest.store') }}">
                     @csrf
-                    <input type="hidden" name="id_habitacion" value="{{ $habitacion->id_habitacion }}">
+                    {{-- En este flujo enviamos solo esta habitación; el array soporta múltiples desde el panel de reservas múltiples --}}
+                    <input type="hidden" name="habitaciones[]" value="{{ $habitacion->id_habitacion }}">
 
                     <div class="row">
-                        {{-- Fecha de entrada --}}
                         <div class="col-md-6 mb-3">
                             <label for="fecha_entrada" class="form-label fw-semibold">
                                 <i class="bi bi-calendar-check"></i> Fecha de Entrada
                             </label>
                             <input type="date" name="fecha_entrada" id="fecha_entrada" required
                                    class="form-control @error('fecha_entrada') is-invalid @enderror"
-                                   value="{{ old('fecha_entrada', date('Y-m-d')) }}"
+                                   value="{{ old('fecha_entrada', $fechaEntrada ?? date('Y-m-d')) }}"
                                    min="{{ date('Y-m-d') }}">
                             @error('fecha_entrada')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        {{-- Fecha de salida --}}
                         <div class="col-md-6 mb-3">
                             <label for="fecha_salida" class="form-label fw-semibold">
                                 <i class="bi bi-calendar-x"></i> Fecha de Salida
                             </label>
                             <input type="date" name="fecha_salida" id="fecha_salida" required
                                    class="form-control @error('fecha_salida') is-invalid @enderror"
-                                   value="{{ old('fecha_salida', date('Y-m-d', strtotime('+1 day'))) }}"
+                                   value="{{ old('fecha_salida', $fechaSalida ?? date('Y-m-d', strtotime('+1 day'))) }}"
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                             @error('fecha_salida')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -68,7 +65,6 @@
                         </div>
                     </div>
 
-                    {{-- Resumen de costo --}}
                     <div class="alert alert-light border">
                         <h6 class="fw-bold">Resumen de Costo</h6>
                         <div class="d-flex justify-content-between">
@@ -86,14 +82,12 @@
                         </div>
                     </div>
 
-                    {{-- Información del huésped --}}
                     <div class="alert alert-secondary">
                         <h6 class="fw-bold"><i class="bi bi-person"></i> Información del Huésped</h6>
                         <p class="mb-1"><strong>Nombre:</strong> {{ auth()->user()->name }}</p>
                         <p class="mb-0"><strong>Email:</strong> {{ auth()->user()->email }}</p>
                     </div>
 
-                    {{-- Botones --}}
                     <div class="d-flex gap-2">
                         <a href="{{ route('habitaciones.public') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Cancelar
@@ -111,7 +105,6 @@
 
 @push('scripts')
 <script>
-    // Calcular noches y total automáticamente
     const precioNoche = {{ $habitacion->precio }};
     const fechaEntrada = document.getElementById('fecha_entrada');
     const fechaSalida = document.getElementById('fecha_salida');
@@ -121,31 +114,20 @@
     function calcularTotal() {
         const entrada = new Date(fechaEntrada.value);
         const salida = new Date(fechaSalida.value);
-        
+
         if (entrada && salida && salida > entrada) {
-            const diffTime = Math.abs(salida - entrada);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.ceil(Math.abs(salida - entrada) / (1000 * 60 * 60 * 24));
             const total = precioNoche * diffDays;
-            
             nochesSpan.textContent = diffDays;
-            totalSpan.textContent = '$' + total.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            totalSpan.textContent = '$' + total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
     }
 
-    fechaEntrada.addEventListener('change', calcularTotal);
+    fechaEntrada.addEventListener('change', () => {
+        if (fechaEntrada.value) fechaSalida.min = fechaEntrada.value;
+        calcularTotal();
+    });
     fechaSalida.addEventListener('change', calcularTotal);
-    
-    // Calcular al cargar
-    calcularTotal();
-</script>
-@endpush$' + total.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        }
-    }
-
-    fechaEntrada.addEventListener('change', calcularTotal);
-    fechaSalida.addEventListener('change', calcularTotal);
-    
-    // Calcular al cargar
     calcularTotal();
 </script>
 @endpush

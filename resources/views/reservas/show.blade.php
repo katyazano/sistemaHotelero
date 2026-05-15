@@ -33,15 +33,16 @@
                     <dd class="col-sm-7">{{ (strtotime($reserva->fecha_salida) - strtotime($reserva->fecha_entrada)) / 86400 }}</dd>
                     <dt class="col-sm-5">Estado Pago</dt>
                     <dd class="col-sm-7">
-                        <span class="badge bg-{{ $reserva->estado_pago === 'pagado' ? 'success' : ($reserva->estado_pago === 'cancelado' ? 'danger' : 'warning text-dark') }}">
-                            {{ ucfirst($reserva->estado_pago) }}
-                        </span>
+                        @php $colorPago = match($reserva->estado_pago) { 'pagado' => 'success', 'cancelado' => 'danger', default => 'warning text-dark' }; @endphp
+                        <span class="badge bg-{{ $colorPago }}">{{ ucfirst($reserva->estado_pago) }}</span>
                     </dd>
                     <dt class="col-sm-5">Estado Reserva</dt>
                     <dd class="col-sm-7">
-                        <span class="badge bg-{{ $reserva->estado_reserva === 'confirmada' ? 'success' : 'danger' }}">
-                            {{ ucfirst($reserva->estado_reserva) }}
-                        </span>
+                        @php
+                            $colorEstado = match($reserva->estado_reserva) { 'confirmada' => 'success', 'check_in' => 'info', 'check_out' => 'secondary', 'cancelada' => 'danger', default => 'warning text-dark' };
+                            $labelEstado = match($reserva->estado_reserva) { 'check_in' => 'Check-in', 'check_out' => 'Check-out', default => ucfirst($reserva->estado_reserva) };
+                        @endphp
+                        <span class="badge bg-{{ $colorEstado }}">{{ $labelEstado }}</span>
                     </dd>
                     <dt class="col-sm-5">Total</dt>
                     <dd class="col-sm-7 fw-bold fs-5">${{ number_format($reserva->total, 2) }} MXN</dd>
@@ -68,7 +69,7 @@
         <table class="table table-hover mb-0">
             <thead class="table-secondary">
                 <tr>
-                    <th>Habitación</th><th>Tipo</th><th>Personas</th><th>Precio/noche</th><th>Subtotal</th>
+                    <th>Habitación</th><th>Tipo</th><th>Precio/noche</th><th>Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,7 +77,6 @@
                 <tr>
                     <td>#{{ $detalle->habitacion->numero ?? 'N/A' }}</td>
                     <td>{{ $detalle->habitacion->tipo ?? 'N/A' }}</td>
-                    <td>{{ $detalle->cantidad_personas }}</td>
                     <td>${{ number_format($detalle->precio_unitario, 2) }}</td>
                     <td>${{ number_format($detalle->subtotal, 2) }}</td>
                 </tr>

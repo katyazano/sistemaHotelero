@@ -10,53 +10,37 @@
 <div class="row g-4 mb-4">
     <div class="col-md-3">
         <div class="dashboard-card card-primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="mb-1 small opacity-75">Total Reservas</p>
-                        <h3 class="fw-bold">{{ $totalReservas }}</h3>
-                    </div>
-                    <i class="bi bi-calendar-check fs-1 opacity-50"></i>
-                </div>
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check fs-1 opacity-50 d-block mb-2"></i>
+                <p class="mb-1 small opacity-75">Total Reservas</p>
+                <h3 class="fw-bold">{{ $totalReservas }}</h3>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="dashboard-card card-success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="mb-1 small opacity-75">Habitaciones</p>
-                        <h3 class="fw-bold">{{ $totalHabitaciones }}</h3>
-                    </div>
-                    <i class="bi bi-door-open fs-1 opacity-50"></i>
-                </div>
+            <div class="card-body text-center">
+                <i class="bi bi-door-open fs-1 opacity-50 d-block mb-2"></i>
+                <p class="mb-1 small opacity-75">Habitaciones</p>
+                <h3 class="fw-bold">{{ $totalHabitaciones }}</h3>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="dashboard-card card-info">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="mb-1 small opacity-75">Huéspedes</p>
-                        <h3 class="fw-bold">{{ $totalUsuarios }}</h3>
-                    </div>
-                    <i class="bi bi-people fs-1 opacity-50"></i>
-                </div>
+            <div class="card-body text-center">
+                <i class="bi bi-people fs-1 opacity-50 d-block mb-2"></i>
+                <p class="mb-1 small opacity-75">Huéspedes</p>
+                <h3 class="fw-bold">{{ $totalUsuarios }}</h3>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="dashboard-card card-warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <p class="mb-1 small opacity-75">Ingresos Totales</p>
-                        <h3 class="fw-bold">${{ number_format($ingresosTotales, 0) }}</h3>
-                    </div>
-                    <i class="bi bi-cash-stack fs-1 opacity-50"></i>
-                </div>
+            <div class="card-body text-center">
+                <i class="bi bi-cash-stack fs-1 opacity-50 d-block mb-2"></i>
+                <p class="mb-1 small opacity-75">Ingresos Totales</p>
+                <h3 class="fw-bold">${{ number_format($ingresosTotales, 0) }}</h3>
             </div>
         </div>
     </div>
@@ -76,16 +60,18 @@
             </thead>
             <tbody>
                 @forelse($reservasRecientes as $r)
-                <tr>
+                <tr style="cursor:pointer" onclick="window.location.href='{{ route('reservas.edit', $r) }}'">
                     <td class="fw-bold">{{ $r->folio }}</td>
                     <td>{{ $r->usuario->nombre ?? 'N/A' }}</td>
                     <td>{{ \Carbon\Carbon::parse($r->fecha_entrada)->format('d/m/Y') }}</td>
                     <td>{{ \Carbon\Carbon::parse($r->fecha_salida)->format('d/m/Y') }}</td>
                     <td>${{ number_format($r->total, 2) }}</td>
                     <td>
-                        <span class="badge bg-{{ $r->estado_reserva === 'confirmada' ? 'success' : 'danger' }}">
-                            {{ ucfirst($r->estado_reserva) }}
-                        </span>
+                        @php
+                            $colorEstado = match($r->estado_reserva) { 'confirmada' => 'success', 'check_in' => 'info', 'check_out' => 'secondary', 'cancelada' => 'danger', default => 'warning text-dark' };
+                            $labelEstado = match($r->estado_reserva) { 'check_in' => 'Check-in', 'check_out' => 'Check-out', default => ucfirst($r->estado_reserva) };
+                        @endphp
+                        <span class="badge bg-{{ $colorEstado }}">{{ $labelEstado }}</span>
                     </td>
                 </tr>
                 @empty

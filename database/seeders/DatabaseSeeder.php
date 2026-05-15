@@ -2,27 +2,60 @@
 
 namespace Database\Seeders;
 
+use App\Models\Habitacion;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use App\Models\Usuario;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // 1. Ejecutar los seeders manuales (los 3 usuarios fijos y las 3 habitaciones)
-        $this->call([
-            UsuarioSeeder::class,
-            HabitacionSeeder::class,
-        ]);
+        // Crear admin de demostración
+        User::firstOrCreate(
+            ['email' => 'admin@hotel.test'],
+            [
+                'name'     => 'Administrador',
+                'password' => Hash::make('password'),
+                'rol'      => 'admin',
+            ]
+        );
 
-        // 2. Ejecutar el Factory para crear 5 administradores aleatorios
-        Usuario::factory(5)->create([
-            'rol' => 'Administrador'
-        ]);
+        // Crear personal de demostración
+        User::firstOrCreate(
+            ['email' => 'personal@hotel.test'],
+            [
+                'name'     => 'Recepcionista',
+                'password' => Hash::make('password'),
+                'rol'      => 'personal',
+            ]
+        );
 
-        // 3. Ejecutar el Factory para crear 50 clientes (huéspedes) aleatorios
-        Usuario::factory(50)->create([
-            'rol' => 'Huesped'
-        ]);
+        // Crear huésped de demostración
+        User::firstOrCreate(
+            ['email' => 'guest@hotel.test'],
+            [
+                'name'     => 'Cliente Demo',
+                'password' => Hash::make('password'),
+                'rol'      => 'guest',
+            ]
+        );
+
+        // Crear algunas habitaciones de ejemplo
+        $tipos = ['Simple', 'Doble', 'Suite', 'Deluxe'];
+        $precios = [50, 75, 150, 200];
+
+        for ($i = 1; $i <= 12; $i++) {
+            $idx = ($i - 1) % count($tipos);
+            Habitacion::firstOrCreate(
+                ['numero' => $i],
+                [
+                    'tipo'      => $tipos[$idx],
+                    'precio'    => $precios[$idx],
+                    'capacidad' => $idx + 1,
+                    'estado'    => 'disponible',
+                ]
+            );
+        }
     }
 }

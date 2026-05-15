@@ -10,80 +10,76 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">
+    <nav class="navbar navbar-dark bg-dark py-2">
+        <div class="container d-flex justify-content-between align-items-center flex-nowrap">
+            {{-- Logo --}}
+            <a class="navbar-brand fw-bold me-3" href="/">
                 <i class="bi bi-building"></i> Sistema Hotelero
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav ms-auto align-items-center">
 
-                    @auth
-                        @if(auth()->user()->rol === 'admin')
-                            {{-- Admin menu --}}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('admin.dashboard') }}">
-                                    <i class="bi bi-speedometer2"></i> Dashboard Admin
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('habitaciones.index') }}">
-                                    <i class="bi bi-door-open"></i> Gestionar Habitaciones
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('reservas.index') }}">
-                                    <i class="bi bi-calendar-check"></i> Gestionar Reservas
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('admin.reportes.pdf') }}">
-                                    <i class="bi bi-file-earmark-pdf"></i> Reportes PDF
-                                </a>
-                            </li>
-                        @else
-                            {{-- Guest menu --}}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('guest.dashboard') }}">
-                                    <i class="bi bi-house"></i> Inicio
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('habitaciones.public') }}">
-                                    <i class="bi bi-door-open"></i> Habitaciones
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('mis-reservas') }}">
-                                    <i class="bi bi-calendar2-heart"></i> Mis Reservas
-                                </a>
-                            </li>
-                        @endif
+            {{-- Links de navegación según rol --}}
+            @auth
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    @if(auth()->user()->rol === 'admin')
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('admin.dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('habitaciones.index') }}">
+                            <i class="bi bi-door-open"></i> Habitaciones
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('reservas.index') }}">
+                            <i class="bi bi-calendar-check"></i> Reservas
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('checkinout.index') }}">
+                            <i class="bi bi-clipboard2-check"></i> Check-in/out
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('admin.reportes.pdf') }}">
+                            <i class="bi bi-file-earmark-pdf"></i> Reportes
+                        </a>
+                    @elseif(auth()->user()->rol === 'personal')
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('personal.dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Operación
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('checkinout.index') }}">
+                            <i class="bi bi-clipboard2-check"></i> Check-in/out
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('habitaciones.public') }}">
+                            <i class="bi bi-door-open"></i> Catálogo
+                        </a>
+                    @else
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('guest.dashboard') }}">
+                            <i class="bi bi-house"></i> Inicio
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('habitaciones.public') }}">
+                            <i class="bi bi-door-open"></i> Habitaciones
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" href="{{ route('mis-reservas') }}">
+                            <i class="bi bi-calendar2-heart"></i> Mis Reservas
+                        </a>
+                    @endif
 
-                        <li class="nav-item dropdown ms-2">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> {{ auth()->user()->name }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><span class="dropdown-item-text text-muted small">{{ ucfirst(auth()->user()->rol) }}</span></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    @endauth
-
-                </ul>
-            </div>
+                    {{-- Cuenta y Salir --}}
+                    <span class="text-white-50 small ms-2 d-none d-md-inline">
+                        <i class="bi bi-person-circle"></i> {{ auth()->user()->name }}
+                        <span class="badge bg-secondary">{{ ucfirst(auth()->user()->rol) }}</span>
+                    </span>
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-danger btn-sm ms-1">
+                            <i class="bi bi-box-arrow-right"></i> Salir
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="d-flex gap-2">
+                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                    </a>
+                    <a href="{{ route('register') }}" class="btn btn-light btn-sm">
+                        <i class="bi bi-person-plus"></i> Registrarse
+                    </a>
+                </div>
+            @endauth
         </div>
     </nav>
 

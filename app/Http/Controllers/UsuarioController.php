@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class UsuarioController extends Controller
 {
@@ -66,14 +68,15 @@ class UsuarioController extends Controller
     private function obtenerBanderaUrl($nombrePais)
     {
         try {
-            $response = file_get_contents("https://restcountries.com/v3.1/name/{$nombrePais}?fields=flags");
-            $datos = json_decode($response, true);
+            $response = Http::timeout(5)->retry(2, 200)
+                ->get("https://restcountries.com/v3.1/name/{$nombrePais}", ['fields' => 'flags']);
 
-            if (!empty($datos)) {
+            if ($response->successful()) {
+                $datos = $response->json();
                 return $datos[0]['flags']['svg'] ?? null;
             }
-        } catch (\Exception $e) {
-            \Log::error('Error obteniendo bandera del país: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning('REST Countries (bandera) no disponible: ' . $e->getMessage());
         }
 
         return null;
@@ -85,11 +88,11 @@ class UsuarioController extends Controller
     private function obtenerDatosDelPais($nombrePais)
     {
         try {
-            $response = file_get_contents("https://restcountries.com/v3.1/name/{$nombrePais}");
-            $datos = json_decode($response, true);
+            $response = Http::timeout(5)->retry(2, 200)
+                ->get("https://restcountries.com/v3.1/name/{$nombrePais}");
 
-            if (!empty($datos)) {
-                $pais = $datos[0];
+            if ($response->successful() && !empty($response->json())) {
+                $pais = $response->json()[0];
 
                 // Extraer moneda
                 $moneda = 'N/A';
@@ -114,8 +117,8 @@ class UsuarioController extends Controller
                     'bandera_url' => $pais['flags']['svg'] ?? null,
                 ];
             }
-        } catch (\Exception $e) {
-            \Log::error('Error obteniendo datos del país: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning('REST Countries (datos) no disponible: ' . $e->getMessage());
         }
 
         return [

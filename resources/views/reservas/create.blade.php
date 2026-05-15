@@ -57,11 +57,6 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <input type="number" name="detalles[{{ $index }}][cantidad_personas]"
-                               class="form-control" placeholder="Personas" min="1"
-                               value="{{ $detalle['cantidad_personas'] ?? '' }}" required>
-                    </div>
                     <div class="col-md-2">
                         <button type="button" class="btn btn-outline-danger remove-detalle">
                             <i class="bi bi-trash"></i>
@@ -120,8 +115,6 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <input type="number" name="detalles[${detalleIndex}][cantidad_personas]"
-                       class="form-control" placeholder="Personas" min="1" required>
             </div>
             <div class="col-md-2">
                 <button type="button" class="btn btn-outline-danger remove-detalle">

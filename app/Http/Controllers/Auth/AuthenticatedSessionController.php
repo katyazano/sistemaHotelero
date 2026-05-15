@@ -30,12 +30,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // Redirect based on role
-        if ($user->rol === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect()->route('guest.dashboard');
+        return match ($user->rol) {
+            'admin'    => redirect()->route('admin.dashboard'),
+            'personal' => redirect()->route('personal.dashboard'),
+            default    => redirect()->route('guest.dashboard'),
+        };
     }
 
     public function destroy(Request $request)

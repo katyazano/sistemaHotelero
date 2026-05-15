@@ -38,24 +38,32 @@
                     <td>{{ \Carbon\Carbon::parse($reserva->fecha_salida)->format('d/m/Y') }}</td>
                     <td class="fw-bold">${{ number_format($reserva->total, 2) }}</td>
                     <td>
-                        <span class="badge bg-{{ $reserva->estado_pago === 'pagado' ? 'success' : ($reserva->estado_pago === 'cancelado' ? 'danger' : 'warning text-dark') }}">
-                            {{ ucfirst($reserva->estado_pago) }}
-                        </span>
+                        @php $colorPago = match($reserva->estado_pago) { 'pagado' => 'success', 'cancelado' => 'danger', default => 'warning text-dark' }; @endphp
+                        <span class="badge bg-{{ $colorPago }}">{{ ucfirst($reserva->estado_pago) }}</span>
                     </td>
                     <td>
-                        <span class="badge bg-{{ $reserva->estado_reserva === 'confirmada' ? 'success' : 'danger' }}">
-                            {{ ucfirst($reserva->estado_reserva) }}
-                        </span>
+                        @php
+                            $colorEstado = match($reserva->estado_reserva) { 'confirmada' => 'success', 'check_in' => 'info', 'check_out' => 'secondary', 'cancelada' => 'danger', default => 'warning text-dark' };
+                            $labelEstado = match($reserva->estado_reserva) { 'check_in' => 'Check-in', 'check_out' => 'Check-out', default => ucfirst($reserva->estado_reserva) };
+                        @endphp
+                        <span class="badge bg-{{ $colorEstado }}">{{ $labelEstado }}</span>
                     </td>
                     <td class="text-center">
                         @if($reserva->estado_reserva === 'confirmada' && $reserva->estado_pago === 'pendiente')
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                data-bs-toggle="modal"
-                                data-bs-target="#cancelModal"
-                                data-folio="{{ $reserva->folio }}"
-                                data-action="{{ route('reservas.cancelar', $reserva) }}">
-                                <i class="bi bi-x-circle"></i> Cancelar
-                            </button>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{{ route('reservas.pagar.form', $reserva) }}" class="btn btn-sm btn-success">
+                                    <i class="bi bi-credit-card"></i> Pagar
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#cancelModal"
+                                    data-folio="{{ $reserva->folio }}"
+                                    data-action="{{ route('reservas.cancelar', $reserva) }}">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </button>
+                            </div>
+                        @elseif($reserva->estado_pago === 'pagado')
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Pagado</span>
                         @else
                             <span class="text-muted small">—</span>
                         @endif

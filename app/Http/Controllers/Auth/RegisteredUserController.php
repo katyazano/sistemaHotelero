@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,16 +30,30 @@ class RegisteredUserController extends Controller
             'direccion'         => ['nullable', 'string', 'max:500'],
         ]);
 
+        $hashedPassword = Hash::make($request->password);
+
         $user = User::create([
             'name'              => $request->name,
             'email'             => $request->email,
-            'password'          => Hash::make($request->password),
+            'password'          => $hashedPassword,
             'rol'               => 'guest',
             'pais'              => $request->pais,
             'telefono'          => $request->telefono,
             'fecha_nacimiento'  => $request->fecha_nacimiento,
             'direccion'         => $request->direccion,
         ]);
+
+        // Sincronizar con tabla 'usuarios' usada por el módulo de reservas
+        Usuario::updateOrCreate(
+            ['email' => $request->email],
+            [
+                'nombre'   => $request->name,
+                'password' => $hashedPassword,
+                'rol'      => 'Huesped',
+                'telefono' => $request->telefono ?? null,
+                'pais'     => $request->pais ?? null,
+            ]
+        );
 
         event(new Registered($user));
         Auth::login($user);

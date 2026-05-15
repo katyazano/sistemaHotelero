@@ -44,9 +44,13 @@ class User extends Authenticatable
         return $this->rol === 'guest';
     }
 
-    // Legacy alias kept for policy compatibility
     public function esPersonal(): bool
     {
-        return false;
+        return $this->rol === 'personal';
+    }
+
+    public function esStaff(): bool
+    {
+        return in_array($this->rol, ['admin', 'personal'], true);
     }
 }
